@@ -154,13 +154,13 @@
 
         var folder = CONFIG.backup_folder.replace(/\/+$/, '');
         var backupUrl = folder + '/settings_' + name + '.txt';
-        var defaultUrl = folder + '/default_settings.txt';
+        var defaultUrl = folder + '/template.txt';
         fetchAndApply(backupUrl, defaultUrl);
     }
 
     function loadDefaultSettings() {
         var folder = CONFIG.backup_folder.replace(/\/+$/, '');
-        var defaultUrl = folder + '/default_settings.txt';
+        var defaultUrl = folder + '/template.txt';
 
         fetch(defaultUrl)
         .then(function(res) {
@@ -285,11 +285,11 @@
                 zh: '服务器上未找到备份文件'
             },
             lampac_backup_noty_default_not_found: {
-                ru: 'Файл default_settings.txt не найден',
-                en: 'default_settings.txt not found',
-                uk: 'Файл default_settings.txt не знайдено',
-                be: 'Файл default_settings.txt не знойдзены',
-                zh: '未找到 default_settings.txt'
+                ru: 'Файл template.txt не найден',
+                en: 'template.txt not found',
+                uk: 'Файл template.txt не знайдено',
+                be: 'Файл template.txt не знойдзены',
+                zh: '未找到 template.txt'
             },
             lampac_backup_modal_title: {
                 ru: 'Бэкап не найден',
@@ -327,11 +327,11 @@
                 zh: '以此名称保存当前设置'
             },
             lampac_backup_modal_default: {
-                ru: 'Восстановить default_settings.txt',
-                en: 'Restore default_settings.txt',
-                uk: 'Відновити default_settings.txt',
-                be: 'Аднавіць default_settings.txt',
-                zh: '恢复 default_settings.txt'
+                ru: 'Восстановить template.txt',
+                en: 'Restore template.txt',
+                uk: 'Відновити template.txt',
+                be: 'Аднавіць template.txt',
+                zh: '恢复 template.txt'
             },
             lampac_backup_modal_default_descr: {
                 ru: 'Загрузить базовые настройки по умолчанию',
