@@ -15,7 +15,7 @@
 
 ### 1. Настройка бэкап-сервера (скрипт на Python)
 
-1. Поместите скрипт сервера [bckp_server.py](https://github.com/v-breus/customplugins/blob/main/%D0%91%D1%8D%D0%BA%D0%B0%D0%BF%20%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BA%20Lampa/bckp_server.py) в нужную директорию на вашем сервере (например, в `/opt/lampac/`).
+1. Поместите скрипт сервера [bckp_server.py](https://github.com/crazym00n/customplugins/blob/main/%D0%91%D1%8D%D0%BA%D0%B0%D0%BF%20%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BA%20Lampa/bckp_server.py) в нужную директорию на вашем сервере (например, в `/opt/lampac/`).
 2. Отредактируйте конфигурацию в начале файла `bckp_server.py` под ваши нужды:
 ```python
 CONFIG = {
@@ -57,7 +57,7 @@ systemctl enable --now lampa-backup.service
 
 ### 2. Установка плагина в Lampa
 
-1. Разместите файл [backup.js](https://github.com/v-breus/customplugins/blob/main/%D0%91%D1%8D%D0%BA%D0%B0%D0%BF%20%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BA%20Lampa/backup.js) на вашем веб-сервере (например, в каталоге плагинов Lampac: `/opt/lampac/wwwroot/custom_plugins/backup.js`).
+1. Разместите файл [backup.js](https://github.com/crazym00n/customplugins/blob/main/%D0%91%D1%8D%D0%BA%D0%B0%D0%BF%20%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BA%20Lampa/backup.js) на вашем веб-сервере (например, в каталоге плагинов Lampac: `/opt/lampac/wwwroot/custom_plugins/backup.js`).
 2. В самом начале файла `backup.js` укажите IP-адрес, порт вашего бэкап-сервера и путь к папке бэкапов:
 ```javascript
 var CONFIG = {
@@ -69,7 +69,7 @@ var CONFIG = {
 ```
 
 
-3. Подключите плагин в интерфейсе Lampa (через настройки в [init.conf](https://github.com/v-breus/customplugins/blob/main/%D0%91%D1%8D%D0%BA%D0%B0%D0%BF%20%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BA%20Lampa/init.conf)).
+3. Подключите плагин в интерфейсе Lampa (через настройки в [init.conf](https://github.com/crazym00n/customplugins/blob/main/%D0%91%D1%8D%D0%BA%D0%B0%D0%BF%20%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BA%20Lampa/init.conf)).
 
 ---
 
