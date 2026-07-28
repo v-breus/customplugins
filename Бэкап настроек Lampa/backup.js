@@ -10,14 +10,14 @@
     function getDeviceName() {
         var name = localStorage.getItem('custom_device_backup_name');
         if (!name) {
-            name = ''; // Если имя пустое, возвращаем пустую строку
+            name = '';
         }
         return name;
     }
 
     function changeDeviceName() {
         Lampa.Input.edit({
-            title: 'Имя устройства',
+            title: Lampa.Lang.translate('lampac_backup_name'),
             value: getDeviceName(),
             free: true,
             nosave: true
@@ -44,8 +44,6 @@
         }
 
         var fullData = JSON.stringify(localStorage);
-        Lampa.Noty.show('Сохранение настроек для "' + name + '"...');
-
         var url = 'http://' + CONFIG.server_ip + ':' + CONFIG.server_port + '/?device=' + name;
 
         fetch(url, {
@@ -72,7 +70,6 @@
                 localStorage.setItem(key, parsed[key]);
             }
 
-            // Если это дефолтный файл, стираем имя устройства
             if (isDefault) {
                 localStorage.removeItem('custom_device_backup_name');
             }
@@ -155,7 +152,6 @@
             return;
         }
 
-        Lampa.Noty.show('Проверка бэкапа для "' + name + '"...');
         var folder = CONFIG.backup_folder.replace(/\/+$/, '');
         var backupUrl = folder + '/settings_' + name + '.txt';
         var defaultUrl = folder + '/default_settings.txt';
@@ -166,7 +162,6 @@
         var folder = CONFIG.backup_folder.replace(/\/+$/, '');
         var defaultUrl = folder + '/default_settings.txt';
 
-        Lampa.Noty.show('Загрузка default_settings.txt...');
         fetch(defaultUrl)
         .then(function(res) {
             if (!res.ok) throw new Error('Not found');
@@ -187,7 +182,7 @@
             lampac_backup: {
                 ru: 'Резервное копирование',
                 en: 'Backup',
-                uk: 'Резервное копирование',
+                uk: 'Резервне копіювання',
                 zh: '备份'
             },
             lampac_backup_export: {
@@ -244,7 +239,7 @@
                 type: 'button'
             },
             field: {
-                name: Lampa.Lang.translate('lampac_backup_export'),
+                name: Lampa.Lang.translate('lampac_backup_export')
             },
             onChange: function() {
                 saveEverything();
@@ -258,7 +253,7 @@
                 type: 'button'
             },
             field: {
-                name: Lampa.Lang.translate('lampac_backup_import'),
+                name: Lampa.Lang.translate('lampac_backup_import')
             },
             onChange: function() {
                 loadEverything();
@@ -272,7 +267,7 @@
                 type: 'button'
             },
             field: {
-                name: Lampa.Lang.translate('lampac_backup_default'),
+                name: Lampa.Lang.translate('lampac_backup_default')
             },
             onChange: function() {
                 loadDefaultSettings();
