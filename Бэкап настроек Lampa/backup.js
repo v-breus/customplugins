@@ -26,10 +26,10 @@
                 var sanitized = new_value.trim().replace(/[^a-zA-Z0-9_\-]/g, '_');
                 if (sanitized !== '') {
                     localStorage.setItem('custom_device_backup_name', sanitized);
-                    Lampa.Noty.show('Имя изменено на: ' + sanitized);
+                    Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_name_changed') + ': ' + sanitized);
                     $('.backup-device-name-descr').text(sanitized);
                 } else {
-                    Lampa.Noty.show('Имя не может быть пустым');
+                    Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_empty_name'));
                 }
             }
         });
@@ -38,7 +38,7 @@
     function saveEverything() {
         var name = getDeviceName();
         if (!name) {
-            Lampa.Noty.show('Сначала укажите имя устройства!');
+            Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_set_name_first'));
             changeDeviceName();
             return;
         }
@@ -53,13 +53,13 @@
         .then(function(res) { return res.json(); })
         .then(function(data) {
             if (data.success) {
-                Lampa.Noty.show('Успех! Бэкап сохранен для: ' + name);
+                Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_success_save') + ': ' + name);
             } else {
-                Lampa.Noty.show('Ошибка сохранения');
+                Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_error_save'));
             }
         })
         .catch(function() {
-            Lampa.Noty.show('Ошибка соединения с бэкап-сервером');
+            Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_error_connection'));
         });
     }
 
@@ -74,10 +74,10 @@
                 localStorage.removeItem('custom_device_backup_name');
             }
 
-            Lampa.Noty.show('Восстановлено! Перезагрузка...');
+            Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_restored'));
             setTimeout(function() { window.location.reload(); }, 2000);
         } catch (e) {
-            Lampa.Noty.show('Ошибка чтения файла бэкапа');
+            Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_error_read'));
         }
     }
 
@@ -94,24 +94,24 @@
             if (fallbackUrl) {
                 showNotFoundModal(fallbackUrl);
             } else {
-                Lampa.Noty.show('Файл бэкапа не найден на сервере');
+                Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_not_found'));
             }
         });
     }
 
     function showNotFoundModal(defaultUrl) {
-        var name = getDeviceName() || 'не задано';
+        var name = getDeviceName() || Lampa.Lang.translate('lampac_backup_not_set');
         var html = $(
             '<div style="position: relative;">' +
                 '<div class="backup-close-btn selector" style="position: absolute; right: -10px; top: -55px; font-size: 28px; cursor: pointer; color: #aaa; z-index: 99; padding: 10px;">&times;</div>' +
-                '<div style="margin-bottom: 15px; color: #aaa; font-size: 14px;">Для устройства с именем "<b>' + name + '</b>" бэкап не найден. Что сделать?</div>' +
+                '<div style="margin-bottom: 15px; color: #aaa; font-size: 14px;">' + Lampa.Lang.translate('lampac_backup_modal_text_1') + ' "<b>' + name + '</b>" ' + Lampa.Lang.translate('lampac_backup_modal_text_2') + '</div>' +
                 '<div class="settings-param selector" style="margin-bottom: 10px; cursor:pointer;">' +
-                    '<div class="settings-param__name">Создать бэкап</div>' +
-                    '<div class="settings-param__descr">Сохранить текущие настройки под этим именем</div>' +
+                    '<div class="settings-param__name">' + Lampa.Lang.translate('lampac_backup_modal_create') + '</div>' +
+                    '<div class="settings-param__descr">' + Lampa.Lang.translate('lampac_backup_modal_create_descr') + '</div>' +
                 '</div>' +
                 '<div class="settings-param selector" style="cursor:pointer;">' +
-                    '<div class="settings-param__name">Восстановить default_settings.txt</div>' +
-                    '<div class="settings-param__descr">Загрузить базовые настройки по умолчанию</div>' +
+                    '<div class="settings-param__name">' + Lampa.Lang.translate('lampac_backup_modal_default') + '</div>' +
+                    '<div class="settings-param__descr">' + Lampa.Lang.translate('lampac_backup_modal_default_descr') + '</div>' +
                 '</div>' +
             '</div>'
         );
@@ -135,7 +135,7 @@
         });
 
         Lampa.Modal.open({
-            title: 'Бэкап не найден',
+            title: Lampa.Lang.translate('lampac_backup_modal_title'),
             html: html,
             size: 'medium',
             onBack: function () {
@@ -147,7 +147,7 @@
     function loadEverything() {
         var name = getDeviceName();
         if (!name) {
-            Lampa.Noty.show('Сначала укажите имя устройства!');
+            Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_set_name_first'));
             changeDeviceName();
             return;
         }
@@ -171,7 +171,7 @@
             applyBackupText(text, true);
         })
         .catch(function() {
-            Lampa.Noty.show('Файл default_settings.txt не найден');
+            Lampa.Noty.show(Lampa.Lang.translate('lampac_backup_noty_default_not_found'));
         });
     }
 
@@ -183,31 +183,162 @@
                 ru: 'Резервное копирование',
                 en: 'Backup',
                 uk: 'Резервне копіювання',
+                be: 'Рэзервовае капіраванне',
                 zh: '备份'
             },
             lampac_backup_export: {
                 ru: 'Сохранить мои настройки',
                 en: 'Save my settings',
                 uk: 'Зберегти мої налаштування',
+                be: 'Захаваць мае налады',
                 zh: '保存我的设置'
             },
             lampac_backup_import: {
                 ru: 'Восстановить мои настройки',
                 en: 'Restore my settings',
                 uk: 'Відновити мої налаштування',
+                be: 'Аднавіць мае налады',
                 zh: '恢复我的设置'
             },
             lampac_backup_default: {
                 ru: 'Восстановить настройки по умолчанию',
                 en: 'Restore default settings',
                 uk: 'Відновити налаштування за замовчуванням',
+                be: 'Аднавіць налады па змаўчанні',
                 zh: '恢复默认设置'
             },
             lampac_backup_name: {
                 ru: 'Имя устройства',
                 en: 'Device name',
                 uk: 'Назва пристрою',
+                be: 'Назва прылады',
                 zh: '设备名称'
+            },
+            lampac_backup_not_set: {
+                ru: 'не задано',
+                en: 'not set',
+                uk: 'не задано',
+                be: 'не зададзена',
+                zh: '未设置'
+            },
+            lampac_backup_noty_name_changed: {
+                ru: 'Имя изменено на',
+                en: 'Name changed to',
+                uk: 'Назву змінено на',
+                be: 'Назву зменено на',
+                zh: '名称更改为'
+            },
+            lampac_backup_noty_empty_name: {
+                ru: 'Имя не может быть пустым',
+                en: 'Name cannot be empty',
+                uk: 'Назва не може бути порожньою',
+                be: 'Назва не можа быць пустой',
+                zh: '名称不能为空'
+            },
+            lampac_backup_noty_set_name_first: {
+                ru: 'Сначала укажите имя устройства!',
+                en: 'Set device name first!',
+                uk: 'Спочатку вкажіть назву пристрою!',
+                be: 'Спачатку пакажыце назву прылады!',
+                zh: '请先设置设备名称！'
+            },
+            lampac_backup_noty_success_save: {
+                ru: 'Успех! Бэкап сохранен для',
+                en: 'Success! Backup saved for',
+                uk: 'Успіх! Бекап збережено для',
+                be: 'Поспех! Рэзервовая копія захавана для',
+                zh: '成功！已为以下设备保存备份'
+            },
+            lampac_backup_noty_error_save: {
+                ru: 'Ошибка сохранения',
+                en: 'Save error',
+                uk: 'Помилка збереження',
+                be: 'Памылка захавання',
+                zh: '保存错误'
+            },
+            lampac_backup_noty_error_connection: {
+                ru: 'Ошибка соединения с бэкап-сервером',
+                en: 'Backup server connection error',
+                uk: 'Помилка з’єднання з бекап-сервером',
+                be: 'Памылка злучэння з рэзервовым серверам',
+                zh: '备份服务器连接错误'
+            },
+            lampac_backup_noty_restored: {
+                ru: 'Восстановлено! Перезагрузка...',
+                en: 'Restored! Rebooting...',
+                uk: 'Відновлено! Перезавантаження...',
+                be: 'Аднаўлена! Перазагрузка...',
+                zh: '已恢复！正在重启...'
+            },
+            lampac_backup_noty_error_read: {
+                ru: 'Ошибка чтения файла бэкапа',
+                en: 'Backup file read error',
+                uk: 'Помилка читання файлу бекапу',
+                be: 'Памылка чытання файла рэзервовай копіі',
+                zh: '读取备份文件错误'
+            },
+            lampac_backup_noty_not_found: {
+                ru: 'Файл бэкапа не найден на сервере',
+                en: 'Backup file not found on server',
+                uk: 'Файл бекапу не знайдено на сервері',
+                be: 'Файл рэзервовай копіі не знойдзены на серверы',
+                zh: '服务器上未找到备份文件'
+            },
+            lampac_backup_noty_default_not_found: {
+                ru: 'Файл default_settings.txt не найден',
+                en: 'default_settings.txt not found',
+                uk: 'Файл default_settings.txt не знайдено',
+                be: 'Файл default_settings.txt не знойдзены',
+                zh: '未找到 default_settings.txt'
+            },
+            lampac_backup_modal_title: {
+                ru: 'Бэкап не найден',
+                en: 'Backup not found',
+                uk: 'Бекап не знайдено',
+                be: 'Рэзервовая копія не знойдзена',
+                zh: '未找到备份'
+            },
+            lampac_backup_modal_text_1: {
+                ru: 'Для устройства с именем',
+                en: 'For device named',
+                uk: 'Для пристрою з назвою',
+                be: 'Для прылады з назвай',
+                zh: '对于名为'
+            },
+            lampac_backup_modal_text_2: {
+                ru: 'бэкап не найден. Что сделать?',
+                en: 'backup not found. What to do?',
+                uk: 'бекап не знайдено. Що зробити?',
+                be: 'рэзервовая копія не знойдзена. Што зрабіць?',
+                zh: '的设备，未找到备份。要做什么？'
+            },
+            lampac_backup_modal_create: {
+                ru: 'Создать бэкап',
+                en: 'Create backup',
+                uk: 'Створити бекап',
+                be: 'Стварыць рэзервовую копію',
+                zh: '创建备份'
+            },
+            lampac_backup_modal_create_descr: {
+                ru: 'Сохранить текущие настройки под этим именем',
+                en: 'Save current settings under this name',
+                uk: 'Зберегти поточні налаштування під цією назвою',
+                be: 'Захаваць бягучыя налады пад гэтай назвай',
+                zh: '以此名称保存当前设置'
+            },
+            lampac_backup_modal_default: {
+                ru: 'Восстановить default_settings.txt',
+                en: 'Restore default_settings.txt',
+                uk: 'Відновити default_settings.txt',
+                be: 'Аднавіць default_settings.txt',
+                zh: '恢复 default_settings.txt'
+            },
+            lampac_backup_modal_default_descr: {
+                ru: 'Загрузить базовые настройки по умолчанию',
+                en: 'Load basic default settings',
+                uk: 'Завантажити базові налаштування за замовчуванням',
+                be: 'Загрузіць базавыя налады па змаўчанні',
+                zh: '加载基本的默认设置'
             }
         });
 
