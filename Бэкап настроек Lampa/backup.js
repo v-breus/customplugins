@@ -1,49 +1,48 @@
 (function () {
     'use strict';
 
-    // ================= CONFIGURATION =================
     var CONFIG = {
-        server_ip: '192.168.0.1',
+        server_ip: '192.168.42.9',
         server_port: '9999',
-        backup_folder: '/backup' // Путь к папке на сервере
+        backup_folder: '/backup'
     };
-    // =================================================
 
-    // Получаем или запрашиваем имя устройства
     function getDeviceName() {
         var name = localStorage.getItem('custom_device_backup_name');
         if (!name) {
-            name = 'tv_room';
-            localStorage.setItem('custom_device_backup_name', name);
+            name = ''; // Если имя пустое, возвращаем пустую строку
         }
         return name;
     }
 
-    // Функция ручного ввода имени устройства через стандартный диалог
-    function changeDeviceName(callback) {
-        Lampa.Select.close();
-        
-        var currentName = getDeviceName();
-        var userInput = window.prompt('Введите имя устройства:', currentName);
-        
-        if (userInput !== null) {
-            var sanitized = userInput.trim().replace(/[^a-zA-Z0-9_\-]/g, '_');
-            if (sanitized !== '') {
-                localStorage.setItem('custom_device_backup_name', sanitized);
-                Lampa.Noty.show('Имя изменено на: ' + sanitized);
-                if (callback) callback(sanitized);
-            } else {
-                Lampa.Noty.show('Имя не может быть пустым');
-                if (callback) callback(currentName);
+    function changeDeviceName() {
+        Lampa.Input.edit({
+            title: 'Имя устройства',
+            value: getDeviceName(),
+            free: true,
+            nosave: true
+        }, function (new_value) {
+            if (typeof new_value === 'string') {
+                var sanitized = new_value.trim().replace(/[^a-zA-Z0-9_\-]/g, '_');
+                if (sanitized !== '') {
+                    localStorage.setItem('custom_device_backup_name', sanitized);
+                    Lampa.Noty.show('Имя изменено на: ' + sanitized);
+                    $('.backup-device-name-descr').text(sanitized);
+                } else {
+                    Lampa.Noty.show('Имя не может быть пустым');
+                }
             }
-        } else {
-            if (callback) callback(currentName);
-        }
+        });
     }
 
-    // Сохранение настроек текущего устройства
     function saveEverything() {
         var name = getDeviceName();
+        if (!name) {
+            Lampa.Noty.show('Сначала укажите имя устройства!');
+            changeDeviceName();
+            return;
+        }
+
         var fullData = JSON.stringify(localStorage);
         Lampa.Noty.show('Сохранение настроек для "' + name + '"...');
 
@@ -66,13 +65,18 @@
         });
     }
 
-    // Применение загруженного текста настроек
-    function applyBackupText(text) {
+    function applyBackupText(text, isDefault) {
         try {
             var parsed = JSON.parse(text);
             for (var key in parsed) {
                 localStorage.setItem(key, parsed[key]);
             }
+
+            // Если это дефолтный файл, стираем имя устройства
+            if (isDefault) {
+                localStorage.removeItem('custom_device_backup_name');
+            }
+
             Lampa.Noty.show('Восстановлено! Перезагрузка...');
             setTimeout(function() { window.location.reload(); }, 2000);
         } catch (e) {
@@ -80,7 +84,6 @@
         }
     }
 
-    // Загрузка файла бэкапа
     function fetchAndApply(url, fallbackUrl) {
         fetch(url)
         .then(function(res) {
@@ -88,7 +91,7 @@
             return res.text();
         })
         .then(function(text) {
-            applyBackupText(text);
+            applyBackupText(text, false);
         })
         .catch(function() {
             if (fallbackUrl) {
@@ -99,9 +102,8 @@
         });
     }
 
-    // Модальное окно, если бэкапа с таким именем нет
     function showNotFoundModal(defaultUrl) {
-        var name = getDeviceName();
+        var name = getDeviceName() || 'не задано';
         var html = $(
             '<div style="position: relative;">' +
                 '<div class="backup-close-btn selector" style="position: absolute; right: -10px; top: -55px; font-size: 28px; cursor: pointer; color: #aaa; z-index: 99; padding: 10px;">&times;</div>' +
@@ -119,7 +121,6 @@
 
         function closeModal() {
             Lampa.Modal.close();
-            Lampa.Controller.toggle('menu');
         }
 
         html.find('.backup-close-btn').on('hover:enter click', function () {
@@ -127,17 +128,18 @@
         });
 
         html.find('.settings-param').eq(0).on('hover:enter click', function () {
-            Lampa.Modal.close();
+            closeModal();
             saveEverything();
         });
 
         html.find('.settings-param').eq(1).on('hover:enter click', function () {
-            Lampa.Modal.close();
+            closeModal();
             Lampa.Noty.show('Загрузка default_settings.txt...');
             fetch(defaultUrl)
             .then(function(res) { return res.text(); })
             .then(function(text) {
-                applyBackupText(text);
+                // Передаем true, чтобы имя очистилось
+                applyBackupText(text, true);
             })
             .catch(function() {
                 Lampa.Noty.show('Файл default_settings.txt тоже не найден');
@@ -152,107 +154,100 @@
                 closeModal();
             }
         });
-
-        setTimeout(function() {
-            $('.modal').off('click.close_modal').on('click.close_modal', function(e) {
-                if ($(e.target).hasClass('modal')) {
-                    closeModal();
-                }
-            });
-        }, 50);
     }
 
     function loadEverything() {
         var name = getDeviceName();
+        if (!name) {
+            Lampa.Noty.show('Сначала укажите имя устройства!');
+            changeDeviceName();
+            return;
+        }
+
         Lampa.Noty.show('Проверка бэкапа для "' + name + '"...');
-        
         var folder = CONFIG.backup_folder.replace(/\/+$/, '');
         var backupUrl = folder + '/settings_' + name + '.txt';
         var defaultUrl = folder + '/default_settings.txt';
-
         fetchAndApply(backupUrl, defaultUrl);
     }
 
-    // Функция отрисовки элементов управления в боковом меню
-    function openBackupSidebar() {
-        var name = getDeviceName();
-        
-        Lampa.Select.show({
-            title: 'Резервное копирование',
-            items: [
-                {
-                    title: 'Имя устройства',
-                    subtitle: name,
-                    action: 'change_name'
-                },
-                {
-                    title: 'Сохранить настройки',
-                    subtitle: 'Записать настройки на сервер под этим именем',
-                    action: 'save'
-                },
-                {
-                    title: 'Восстановить настройки',
-                    subtitle: 'Загрузить настройки с сервера по этому имени',
-                    action: 'load'
-                }
-            ],
-            onSelect: function (item) {
-                if (item.action === 'change_name') {
-                    changeDeviceName(function () {
-                        openBackupSidebar();
-                    });
-                } else if (item.action === 'save') {
-                    saveEverything();
-                } else if (item.action === 'load') {
-                    loadEverything();
-                }
+    function startPlugin() {
+        window.lampac_backup_plugin = true;
+
+        Lampa.Lang.add({
+            lampac_backup: {
+                ru: 'Резервное копирование',
+                en: 'Backup',
+                uk: 'Резервное копирование',
+                zh: '备份'
             },
-            onBack: function () {
-                Lampa.Controller.toggle('menu');
+            lampac_backup_export: {
+                ru: 'Сохранить настройки',
+                en: 'Save settings',
+                uk: 'Зберегти налаштування',
+                zh: '保存设置'
+            },
+            lampac_backup_import: {
+                ru: 'Восстановить настройки',
+                en: 'Restore settings',
+                uk: 'Відновити налаштування',
+                zh: '恢复设置'
+            },
+            lampac_backup_name: {
+                ru: 'Имя устройства',
+                en: 'Device name',
+                uk: 'Назва пристрою',
+                zh: '设备名称'
+            }
+        });
+
+        Lampa.SettingsApi.addComponent({
+            component: 'backup',
+            icon: '<svg width="88" height="83" viewBox="0 0 88 83" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M81.7671 30.4752V23.5114C81.7611 21.7339 81.1797 20.0062 80.11 18.5867C79.0402 17.1672 77.5396 16.1322 75.8326 15.6367V8.67441C75.8302 6.48914 74.961 4.39407 73.4158 2.84885C71.8705 1.30363 69.7755 0.43445 67.5902 0.432007H20.1098C17.9245 0.43445 15.8295 1.30363 14.2842 2.84885C12.739 4.39407 11.8698 6.48914 11.8674 8.67441V15.6367C10.1604 16.1322 8.65977 17.1672 7.59002 18.5867C6.52026 20.0062 5.9389 21.7339 5.93293 23.5114V30.4752C4.22699 30.9708 2.72724 32.0051 1.65785 33.4237C0.588461 34.8422 0.00686778 36.5688 0 38.3452V73.9536C0.00244347 76.1389 0.871622 78.2339 2.41684 79.7792C3.96207 81.3244 6.05713 82.1936 8.24241 82.196H79.4591C81.6444 82.1936 83.7395 81.3244 85.2847 79.7792C86.8299 78.2339 87.6991 76.1389 87.7015 73.9536V38.3468C87.6949 36.5698 87.1132 34.8428 86.0435 33.4239C84.9738 32.005 83.4736 30.9706 81.7671 30.4752ZM20.1113 5.04788H67.5917C68.5532 5.0491 69.4749 5.43157 70.1547 6.11141C70.8346 6.79126 71.217 7.71297 71.2183 8.67441V15.2674H16.4848V8.67441C16.486 7.71297 16.8685 6.79126 17.5483 6.11141C18.2282 5.43157 19.1499 5.0491 20.1113 5.04788ZM14.1769 19.8833H73.5247C74.4864 19.8845 75.4083 20.2672 76.0882 20.9474C76.7681 21.6275 77.1504 22.5497 77.1512 23.5114V30.1044H64.8314C63.474 30.1029 62.1373 30.4374 60.9405 31.0779C59.7437 31.7185 58.724 32.6452 57.9723 33.7755L55.5612 37.3913C55.2306 37.8885 54.782 38.2962 54.2556 38.5781C53.7291 38.86 53.1411 39.0073 52.544 39.0068H35.1575C34.5604 39.0073 33.9724 38.86 33.446 38.5781C32.9195 38.2962 32.471 37.8885 32.1403 37.3913L29.7293 33.7755C28.9776 32.6452 27.9579 31.7185 26.7611 31.0779C25.5643 30.4374 24.2275 30.1029 22.8701 30.1044H10.5503V23.5129C10.5512 22.5512 10.9334 21.6291 11.6133 20.9489C12.2932 20.2687 13.2152 19.886 14.1769 19.8848V19.8833ZM83.0857 73.9551C83.0844 74.9166 82.702 75.8383 82.0221 76.5181C81.3423 77.198 80.4206 77.5804 79.4591 77.5817H8.24241C7.28096 77.5804 6.35925 77.198 5.67941 76.5181C4.99956 75.8383 4.61709 74.9166 4.61587 73.9551V38.3468C4.61709 37.3853 4.99956 36.4636 5.67941 35.7838C6.35925 35.1039 7.28096 34.7215 8.24241 34.7202H22.8701C23.4675 34.7194 24.0559 34.8665 24.5826 35.1484C25.1094 35.4303 25.5582 35.8382 25.8889 36.3358L28.2999 39.9516C29.0515 41.0816 30.0709 42.0082 31.2674 42.6488C32.464 43.2893 33.8004 43.6239 35.1575 43.6227H52.544C53.9012 43.6239 55.2376 43.2893 56.4341 42.6488C57.6306 42.0082 58.6501 41.0816 59.4016 39.9516L61.8127 36.3358C62.1434 35.8382 62.5921 35.4303 63.1189 35.1484C63.6456 34.8665 64.234 34.7194 64.8314 34.7202H79.4591C80.4206 34.7215 81.3423 35.1039 82.0221 35.7838C82.702 36.4636 83.0844 37.3853 83.0857 38.3468V73.9551Z" fill="white"/><path d="M54.2365 58.295H33.465C32.8529 58.295 32.2659 58.5382 31.8331 58.971C31.4003 59.4038 31.1571 59.9909 31.1571 60.603C31.1571 61.2151 31.4003 61.8021 31.8331 62.2349C32.2659 62.6678 32.8529 62.9109 33.465 62.9109H54.2365C54.8486 62.9109 55.4356 62.6678 55.8684 62.2349C56.3012 61.8021 56.5444 61.2151 56.5444 60.603C56.5444 59.9909 56.3012 59.4038 55.8684 58.971C55.4356 58.382 54.8486 58.295 54.2365 58.295Z" fill="white"/></svg>',
+            name: Lampa.Lang.translate('lampac_backup')
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'backup',
+            param: {
+                type: 'button'
+            },
+            field: {
+                name: Lampa.Lang.translate('lampac_backup_name'),
+                description: '<span class="backup-device-name-descr">' + getDeviceName() + '</span>'
+            },
+            onChange: function() {
+                changeDeviceName();
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'backup',
+            param: {
+                type: 'button'
+            },
+            field: {
+                name: Lampa.Lang.translate('lampac_backup_export'),
+            },
+            onChange: function() {
+                saveEverything();
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'backup',
+            param: {
+                type: 'button'
+            },
+            field: {
+                name: Lampa.Lang.translate('lampac_backup_import'),
+            },
+            onChange: function() {
+                loadEverything();
             }
         });
     }
 
-    function initMenuButtons() {
-        $('.menu__list').each(function() {
-            var menuList = $(this);
-            if (menuList.find('.backup-menu-btn').length > 0) return;
+    if (!window.lampac_backup_plugin) startPlugin();
 
-            var btnBackup = $(
-                '<div class="menu__item selector backup-menu-btn" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 5px;">' +
-                    '<div class="menu__ico">' +
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>' +
-                    '</div>' +
-                    '<div class="menu__text">Резервное копирование</div>' +
-                '</div>'
-            );
-
-            btnBackup.on('hover:enter click', function () {
-                openBackupSidebar();
-            });
-
-            menuList.append(btnBackup);
-        });
-
-        var allBtns = $('.backup-menu-btn');
-        if (allBtns.length > 1) {
-            allBtns.slice(1).remove();
-        }
-    }
-
-    Lampa.Listener.follow('menu', function (e) {
-        if (e.type === 'render') {
-            initMenuButtons();
-        }
-    });
-
-    if (window.appready) {
-        initMenuButtons();
-    } else {
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type == 'ready') {
-                initMenuButtons();
-            }
-        });
-    }
 })();
