@@ -1,0 +1,12 @@
+  "LampaWeb": {
+    "initPlugins": {
+      "backup": false
+    },
+    "customPlugins": [
+      {
+        "url": "{localhost}/custom_plugins/backup.js",
+        "status": 1,
+        "name": "Бэкап",
+        "author": "Я и трактор"
+      }
+    ]
