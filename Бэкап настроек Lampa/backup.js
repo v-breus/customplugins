@@ -3,7 +3,7 @@
 
     // ================= CONFIGURATION =================
     var CONFIG = {
-        server_ip: '192.168.42.9',
+        server_ip: '192.168.0.1',
         server_port: '9999',
         backup_folder: '/backup' // Путь к папке на сервере
     };
